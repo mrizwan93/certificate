@@ -1,0 +1,84 @@
+# Story 1: Get me a cert in location X
+#
+# As an Ansible user, I want to use Ansible to issue a certificate
+#   and store it in a given path in my server, so I can use the same
+#   tool used to configure the services to also issue and manage my certificates.
+#
+
+
+# Issue a single key pair in /etc/certificates/default/
+---
+- hosts: webserver
+  roles:
+    - certificate
+
+
+# Issue a single key pair in /usr/local/certs/default/
+---
+- hosts: webserver
+  vars:
+    certificates_dir: /usr/local/certs/
+  roles:
+    - certificate
+
+
+# Issue a single key pair in /etc/certificates/first/
+---
+- hosts: webserver
+  vars:
+    certificates:
+      - name: first
+  roles:
+    - certificate
+
+
+# Issues two key pairs:
+#  - /some/path/
+#  - /some/other/path/
+---
+- hosts: webserver
+  vars:
+      certificates:
+        - name: first
+          cert: /some/path/first.crt
+          key: /some/path/first.key
+
+        - name: second
+          cert: /some/other/path/second.crt
+          key: /some/other/path/second.key
+  roles:
+    - certificate
+
+
+# Issue a single key pair in /etc/certificates/first/
+#   with more options
+---
+- hosts: webserver
+  vars:
+    certificates:
+      - name: first
+        common_name: example.com
+        principal: 'HTTP/example.com'
+        alt_names:
+          - sub1.example.com
+          - sub2.example.com
+          - sub3.example.com
+        country: US
+        state: NY
+        locality: New York
+        organization: Red Hat
+        organizational_unit: platform
+        email: admin@example.com
+        key_size: 4096
+        key_usage:
+          - 'digitalSignature'
+          - 'nonRepudiation'
+          - 'keyEncipherment'
+        extended_key_usage:
+          - 'id-kp-clientAuth'
+          - 'id-kp-serverAuth'
+        wait: true
+  roles:
+    - certificate
+
+# vim: ts=2 sts=2 et :

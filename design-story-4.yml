@@ -1,0 +1,27 @@
+# Story 4: Run commands before and after the certificate is issued/renewed
+#
+# As an Ansible user, I want to be able to use Ansible to
+#   configure commands to be executed before and after my
+#   certificate is issued, so I can script pre and post
+#   actions (like stop and start services) when a certificate
+#   changes.
+#
+
+
+# Issue a certificate and set commands to be executed before
+#  and after it's issuance and renewal
+---
+- hosts: webserver
+  vars:
+      certificates:
+        - name: first
+          cert: /some/path/first.crt
+          key: /some/path/first.key
+          common_name: example.com
+          run_before: systemctl stop webserver.service
+          run_after: systemctl start webserver.service
+  roles:
+    - certificate
+
+
+# vim: ts=2 sts=2 et :

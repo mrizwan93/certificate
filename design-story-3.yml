@@ -1,0 +1,24 @@
+# Story 3: Get me a cert in location X using IPA as CA
+#
+# As an Ansible user, I want to use Ansible to issue my
+#   certificates using IPA as my CA, so I can use my existing
+#   IPA infrastructure to manage the certificate trust chain.
+#
+
+
+# Issue a certificate using certmonger and IPA as it's CA
+---
+- hosts: webserver
+  vars:
+      certificates:
+        - name: first
+          cert: /some/path/first.crt
+          key: /some/path/first.key
+          common_name: example.com
+          provider: certmonger
+          ca: ipa
+  roles:
+    - certificate
+
+
+# vim: ts=2 sts=2 et :
