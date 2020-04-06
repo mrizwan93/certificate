@@ -29,7 +29,6 @@ and the key in `/etc/pki/tls/private/mycert.key`.
 |-------------------------|----------------------------------------------------------------------------------------------------------------|:----:|:--------:|-------------------|
 | certificate_wait        | If the task should wait for the certificate to be issued.                                                      | bool | no       | yes               |
 | certificate\_requests   | A list of dicts representing each certificate to be issued. See [certificate_requests](#certificate_requests). | list | no       | -                 |
-| certificate_install_certmonger | Install certmonger and configure it to be a provider.                                                   | bool | no       | yes               |
 
 
 ### certificate_requests
