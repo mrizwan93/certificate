@@ -12,7 +12,7 @@ Basic usage:
   vars:
     certificate_requests:
       - name: mycert
-        common_name: *.example.com
+        dns: www.example.com
         ca: self-sign
 
   roles:
@@ -33,39 +33,87 @@ and the key in `/etc/pki/tls/private/mycert.key`.
 
 ### certificate_requests
 
-| Parameter               | Description                                                                                       | Type | Required | Default                |
-|-------------------------|---------------------------------------------------------------------------------------------------|:----:|:--------:|------------------------|
-| name                    | Name of the certificate.                                                                          | str  | yes      | -                      |
-| common_name             | Hostname to be used in the certificate subject.                                                   | str  | yes      | -                      |
-| ca                      | CA that will issue the certificate. See [CAs and Providers](#cas-and-providers).                  | str  | yes      | -                      |
-| provider                | The underlying method used to request and manage the certificate.                                 | str  | no       | *Varies by CA*         |
-| user                    | The user to whom the certificate should belong. Can be a user name or a user ID.                  | str  | no       | *User running Ansible* |
-| group                   | Which group should own the certificate. Can be either a group name or a group ID.                 | str  | no       | -                      |
-| key_size                | Generate keys with a specific keysize in bits.                                                    | int  | no       | 2048                   |
-| auto_renew              | Indicates if the certificate should be renewed automatically before it expires.                   | bool | no       | yes                    |
-| certificate_file        | Full path of certificate to be issued.                                                            | str  | no       | -                      |
-| key_file                | Full path to private key file to be issued.                                                       | str  | no       | -                      |
-| alternative\_names      | Alternative names to be included in the certificate. See [alternative_names](#alternative_names). | dict | no       | -                      |
-| country                 | Country field of certificate request.                                                             | str  | no       | -                      |
-| state                   | State field of certificate request.                                                               | str  | no       | -                      |
-| locality                | Locality field of certificate request (usually city).                                             | str  | no       | -                      |
-| organization            | Organization field of certificate (usually company name).                                         | str  | no       | -                      |
-| organizational_unit     | Organizational unit field of certificate request.                                                 | str  | no       | -                      |
-| email                   | Contact email that will be present in the certificate.                                            | str  | no       | -                      |
-| key_usage               | Key Usage attributes to be present in the certificate request.                                    | list | no       | -                      |
-| extended_key_usage      | Extended Key Usage attributes to be present in the certificate request.                           | list | no       | -                      |
-| run_before              | Command that should run before saving the certificate.                                            | str  | no       | -                      |
-| run_after               | Command that should run after saving the certificate.                                             | str  | no       | -                      |
-| principal               | Kerberos principal.                                                                               | str  | no       | -                      |
+**Note:** Be aware that the CA might not honor all the requested fields.
+For example, even if a request include `country: US`, the CA might issue
+the certificate without `country` in it's subject.
+
+| Parameter            | Description                                                                                       | Type        | Required | Default                 |
+|----------------------|---------------------------------------------------------------------------------------------------|:-----------:|:--------:|-------------------------|
+| name                 | Name of the certificate.                                                                          | str         | yes      | -                       |
+| ca                   | CA that will issue the certificate. See [CAs and Providers](#cas-and-providers).                  | str         | yes      | -                       |
+| dns                  | Domain (or list of domains) to be included in the certficate.                                     | str or list | no       | -                       |
+| email                | Email (or list of emails) to be included in the certficate.                                       | str or list | no       | -                       |
+| ip                   | IP address (or list of IP addresses) to be included in the certficate.                            | str or list | no       | -                       |
+| certificate\_file    | Full path of certificate to be issued.                                                            | str         | no       | -                       |
+| key\_file            | Full path to private key file to be issued.                                                       | str         | no       | -                       |
+| auto_renew           | Indicates if the certificate should be renewed automatically before it expires.                   | bool        | no       | yes                     |
+| user                 | User name (or user id) for the certficate and key files.                                          | str         | no       | *User running Ansible*  |
+| group                | Group name (or group id) for the certficate and key files.                                        | str         | no       | *Group running Ansible* |
+| key\_size            | Generate keys with a specific keysize in bits.                                                    | int         | no       | 3072 - See [key_size](#key_size) |
+| common\_name         | Common Name requested for the certificate subject.                                                | str         | no       | See [common_name](#common_name)  |
+| country              | Country requested for the certificate subject.                                                    | str         | no       | -                       |
+| state                | State requested for the certificate subject.                                                      | str         | no       | -                       |
+| locality             | Locality requested for the certificate subject (usually city).                                    | str         | no       | -                       |
+| organization         | Organization requested for the certificate subject.                                               | str         | no       | -                       |
+| organizational_unit  | Organizational unit requested for the certificate subject.                                        | str         | no       | -                       |
+| contact\_email       | Contact email requested for the certificate subject.                                              | str         | no       | -                       |
+| key\_usage           | Allowed Key Usage for the certificate. For valid values see: [key\_usage](#key_usage).            | list        | no       | -                       |
+| extended\_key\_usage | Extended Key Usage attributes to be present in the certificate request.                           | list        | no       | -                       |
+| run\_before          | Command that should run before saving the certificate.                                            | str         | no       | -                       |
+| run\_after           | Command that should run after saving the certificate.                                             | str         | no       | -                       |
+| principal            | Kerberos principal.                                                                               | str         | no       | -                       |
+| provider             | The underlying method used to request and manage the certificate.                                 | str         | no       | *Varies by CA*          |
 
 
-### alternative_names
+### common_name
 
-| Parameter               | Description                                                        | Type | Required | Default |
-|-------------------------|--------------------------------------------------------------------|:----:|:--------:|---------|
-| dns                     | Domain names to be included in Subject Alternative Names (SAN).    | list | no       | -       |
-| email                   | Email addresses to be included in Subject Alternative Names (SAN). | list | no       | -       |
-| ip                      | IP addresses to be included in Subject Alternative Names (SAN).    | list | no       | -       |
+If `common_name` is not set the role will attempt to use the first
+value of `dns` or `ip`, respectively, as the default. If `dns` and
+`ip` are also not set, `common_name` will not be included in the certificate.
+
+If you want to ensure that `common_name` doesn't appear in the
+certificate you can set it to `null`. For example:
+
+```yaml
+
+---
+- hosts: webserver
+
+  vars:
+    certificate_requests:
+      - name: mycert
+        dns: www.example.com
+        ca: self-sign
+        common_name: null
+
+  roles:
+    - certificate
+```
+
+
+### key_size
+
+Recommended minimal-values for a certificate key size, from different
+organizations, vary across time. In the attempt to provide safe settings,
+the default minimal-value for `key_size` will be increased over time.
+
+If you want your certificates to always keep the same `key_size` when
+renewed, set this variable to the desired value.
+
+
+### key_usage
+
+Valid values for `key_usage` are:
+
+* digitalSignature
+* nonRepudiation
+* keyEncipherment
+* dataEncipherment
+* keyAgreement
+* keyCertSign
+* cRLSign
+* encipherOnly
+* decipherOnly
 
 
 ## CAs and Providers
@@ -140,7 +188,7 @@ directory for the distribution.
   vars:
     certificate_requests:
       - name: mycert
-        common_name: *.example.com
+        dns: *.example.com
         ca: self-sign
 
   roles:
@@ -169,7 +217,7 @@ Issue a certificate and key and place them in the specified location.
   vars:
     certificate_requests:
       - name: mycert
-        common_name: *.example.com
+        dns: *.example.com
         ca: self-sign
         certificate_file: /another/path/other-cert-name.crt
         key_file: /another/path/other-cert-name.key
@@ -178,7 +226,7 @@ Issue a certificate and key and place them in the specified location.
     - certificate
 ```
 
-### Certificates with one or more SAN (Subject Alternative Name)
+### Certificates with multiple DNS, IP and Email
 
 ```yaml
 
@@ -187,19 +235,18 @@ Issue a certificate and key and place them in the specified location.
   vars:
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns:
+          - www.example.com
+          - sub1.example.com
+          - sub2.example.com
+          - sub3.example.com
+        ip:
+          - 192.168.0.12
+          - 192.168.0.65
+        email:
+          - sysadmin@example.com
+          - support@example.com
         ca: self-sign
-        alternative_names:
-          dns:
-            - sub1.example.com
-            - sub2.example.com
-            - sub3.example.com
-          ip:
-            - 192.168.0.12
-            - 192.168.0.65
-          email:
-            - sysadmin@example.com
-            - support@example.com
 
   roles:
     - certificate
@@ -215,6 +262,7 @@ Issue a certificate and key and place them in the specified location.
   vars:
     certificate_requests:
       - name: mycert
+        dns: www.example.com
         common_name: www.example.com
         ca: self-sign
         country: US
@@ -237,7 +285,7 @@ Issue a certificate and key and place them in the specified location.
   vars:
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns: www.example.com
         ca: self-sign
         key_size: 4096
   roles:
@@ -255,7 +303,7 @@ Issue a certificate and key and place them in the specified location.
   vars:
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns: www.example.com
         ca: self-sign
         key_usage:
           - digitalSignature
@@ -283,7 +331,7 @@ actually wait for it.
     certificate_wait: false
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns: www.example.com
         ca: self-sign
   roles:
     - certificate
@@ -299,7 +347,7 @@ actually wait for it.
   vars:
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns: www.example.com
         ca: self-sign
         principal: HTTP/www.example.com
 
@@ -320,7 +368,7 @@ auto-renewal. To disable that behavior set `auto_renew: no`.
   vars:
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns: www.example.com
         ca: self-sign
         auto_renew: no
 
@@ -341,7 +389,7 @@ to use it's CA to issue your certificate. To do that just set `ca: ipa`.
   vars:
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns: www.example.com
         ca: ipa
 
   roles:
@@ -357,7 +405,7 @@ is not enrolled:
   vars:
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns: www.example.com
         ca: "{{ 'ipa' if 'ipa' in certificate_available_cas else 'self-sign' }}"
   roles:
     - certificate
@@ -378,7 +426,7 @@ renewed and another command just after. In order to do that use
   vars:
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns: www.example.com
         ca: self-sign
         run_before: systemctl stop webserver.service
         run_after: systemctl start webserver.service
@@ -402,7 +450,7 @@ user and group are both set to httpd.
   vars:
     certificate_requests:
       - name: mycert
-        common_name: www.example.com
+        dns: www.example.com
         ca: self-sign
         user: httpd
         group: httpd
