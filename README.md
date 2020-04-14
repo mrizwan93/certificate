@@ -33,22 +33,28 @@ and the key in `/etc/pki/tls/private/mycert.key`.
 
 ### certificate_requests
 
+**Note:** Fields such as `common_name`, `country`, `state`, `locality`,
+`organization`, `organizational_unit`, `email`, `key_usage`, and
+`extended_key_usage` that can be included in the certificate request
+are defined by the RFC 5280.
+
 **Note:** Be aware that the CA might not honor all the requested fields.
 For example, even if a request include `country: US`, the CA might issue
 the certificate without `country` in it's subject.
+
 
 | Parameter            | Description                                                                                       | Type        | Required | Default                 |
 |----------------------|---------------------------------------------------------------------------------------------------|:-----------:|:--------:|-------------------------|
 | name                 | Name of the certificate.                                                                          | str         | yes      | -                       |
 | ca                   | CA that will issue the certificate. See [CAs and Providers](#cas-and-providers).                  | str         | yes      | -                       |
-| dns                  | Domain (or list of domains) to be included in the certficate.                                     | str or list | no       | -                       |
-| email                | Email (or list of emails) to be included in the certficate.                                       | str or list | no       | -                       |
-| ip                   | IP address (or list of IP addresses) to be included in the certficate.                            | str or list | no       | -                       |
+| dns                  | Domain (or list of domains) to be included in the certificate. Also can provide the default value for common\_name. See [common_name](#common_name). | str or list | no | - |
+| email                | Email (or list of emails) to be included in the certificate.                                      | str or list | no       | -                       |
+| ip                   | IP address (or list of IP addresses) to be included in the certificate. Also can provide the default value for common\_name. See [common_name](#common_name). | str or list | no | - |
 | certificate\_file    | Full path of certificate to be issued.                                                            | str         | no       | -                       |
 | key\_file            | Full path to private key file to be issued.                                                       | str         | no       | -                       |
 | auto_renew           | Indicates if the certificate should be renewed automatically before it expires.                   | bool        | no       | yes                     |
-| owner                | User name (or user id) for the certficate and key files.                                          | str         | no       | *User running Ansible*  |
-| group                | Group name (or group id) for the certficate and key files.                                        | str         | no       | *Group running Ansible* |
+| owner                | User name (or user id) for the certificate and key files.                                         | str         | no       | *User running Ansible*  |
+| group                | Group name (or group id) for the certificate and key files.                                       | str         | no       | *Group running Ansible* |
 | key\_size            | Generate keys with a specific keysize in bits.                                                    | int         | no       | 3072 - See [key_size](#key_size) |
 | common\_name         | Common Name requested for the certificate subject.                                                | str         | no       | See [common_name](#common_name)  |
 | country              | Country requested for the certificate subject.                                                    | str         | no       | -                       |
@@ -137,8 +143,8 @@ provider and it's only mentioned here as an example.*
 
 ## Facts
 
-This role provide facts that can be useful for conditional control in
-playbooks or event for debugging.
+This role provides facts that can be useful for conditional control in
+playbooks or even for debugging.
 
 ### certificate_available_cas
 
@@ -415,7 +421,7 @@ is not enrolled:
 ### Running a command before or after a certificate is issued
 
 
-Sometime is used to execute a command just before a certificate get
+Sometimes you need to execute a command just before a certificate is
 renewed and another command just after. In order to do that use
 `run_before` and `run_after`.
 
