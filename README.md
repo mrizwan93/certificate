@@ -47,7 +47,7 @@ the certificate without `country` in it's subject.
 | certificate\_file    | Full path of certificate to be issued.                                                            | str         | no       | -                       |
 | key\_file            | Full path to private key file to be issued.                                                       | str         | no       | -                       |
 | auto_renew           | Indicates if the certificate should be renewed automatically before it expires.                   | bool        | no       | yes                     |
-| user                 | User name (or user id) for the certficate and key files.                                          | str         | no       | *User running Ansible*  |
+| owner                | User name (or user id) for the certficate and key files.                                          | str         | no       | *User running Ansible*  |
 | group                | Group name (or group id) for the certficate and key files.                                        | str         | no       | *Group running Ansible* |
 | key\_size            | Generate keys with a specific keysize in bits.                                                    | int         | no       | 3072 - See [key_size](#key_size) |
 | common\_name         | Common Name requested for the certificate subject.                                                | str         | no       | See [common_name](#common_name)  |
@@ -435,12 +435,12 @@ renewed and another command just after. In order to do that use
     - certificate
 ```
 
-### Setting the certificate user and group
+### Setting the certificate owner and group
 
 If you are using a certificate for a service, for example httpd,
-it's likely that you'll need to set the certificate user and group
+it's likely that you'll need to set the certificate owner and group
 that will own the certificate. In the following example the
-user and group are both set to httpd.
+owner and group are both set to httpd.
 
 
 ```yaml
@@ -452,7 +452,7 @@ user and group are both set to httpd.
       - name: mycert
         dns: www.example.com
         ca: self-sign
-        user: httpd
+        owner: httpd
         group: httpd
 
   roles:
