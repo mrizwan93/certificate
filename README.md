@@ -42,20 +42,23 @@ are defined by the RFC 5280.
 For example, even if a request include `country: US`, the CA might issue
 the certificate without `country` in it's subject.
 
+**Note:** The fields `dns`, `email` and `ip` are used to define the Subject
+Alternative Names (SAN).
+
 
 | Parameter            | Description                                                                                       | Type        | Required | Default                 |
 |----------------------|---------------------------------------------------------------------------------------------------|:-----------:|:--------:|-------------------------|
 | name                 | Name of the certificate.                                                                          | str         | yes      | -                       |
 | ca                   | CA that will issue the certificate. See [CAs and Providers](#cas-and-providers).                  | str         | yes      | -                       |
-| dns                  | Domain (or list of domains) to be included in the certificate. Also can provide the default value for common\_name. See [common_name](#common_name). | str or list | no | - |
+| dns                  | Domain (or list of domains) to be included in the certificate. Also can provide the default value for [common\_name](#common_name). | str or list | no | - |
 | email                | Email (or list of emails) to be included in the certificate.                                      | str or list | no       | -                       |
-| ip                   | IP address (or list of IP addresses) to be included in the certificate. Also can provide the default value for common\_name. See [common_name](#common_name). | str or list | no | - |
+| ip                   | IP address (or list of IP addresses) to be included in the certificate. Also can provide the default value [common\_name](#common_name). | str or list | no | - |
 | certificate\_file    | Full path of certificate to be issued.                                                            | str         | no       | -                       |
 | key\_file            | Full path to private key file to be issued.                                                       | str         | no       | -                       |
 | auto_renew           | Indicates if the certificate should be renewed automatically before it expires.                   | bool        | no       | yes                     |
 | owner                | User name (or user id) for the certificate and key files.                                         | str         | no       | *User running Ansible*  |
 | group                | Group name (or group id) for the certificate and key files.                                       | str         | no       | *Group running Ansible* |
-| key\_size            | Generate keys with a specific keysize in bits.                                                    | int         | no       | 3072 - See [key_size](#key_size) |
+| key\_size            | Generate keys with a specific keysize in bits.                                                    | int         | no       | 2048 - See [key_size](#key_size) |
 | common\_name         | Common Name requested for the certificate subject.                                                | str         | no       | See [common_name](#common_name)  |
 | country              | Country requested for the certificate subject.                                                    | str         | no       | -                       |
 | state                | State requested for the certificate subject.                                                      | str         | no       | -                       |
@@ -65,8 +68,8 @@ the certificate without `country` in it's subject.
 | contact\_email       | Contact email requested for the certificate subject.                                              | str         | no       | -                       |
 | key\_usage           | Allowed Key Usage for the certificate. For valid values see: [key\_usage](#key_usage).            | list        | no       | -                       |
 | extended\_key\_usage | Extended Key Usage attributes to be present in the certificate request.                           | list        | no       | -                       |
-| run\_before          | Command that should run before saving the certificate.                                            | str         | no       | -                       |
-| run\_after           | Command that should run after saving the certificate.                                             | str         | no       | -                       |
+| run\_before          | Command that should run before saving the certificate. See [run hooks](#run-hooks).               | str         | no       | -                       |
+| run\_after           | Command that should run after saving the certificate. See [run hooks](#run-hooks).                | str         | no       | -                       |
 | principal            | Kerberos principal.                                                                               | str         | no       | -                       |
 | provider             | The underlying method used to request and manage the certificate.                                 | str         | no       | *Varies by CA*          |
 
@@ -120,6 +123,16 @@ Valid values for `key_usage` are:
 * cRLSign
 * encipherOnly
 * decipherOnly
+
+
+### run hooks
+
+Sometimes you need to execute a command just before a certificate is
+renewed and another command just after. In order to do that use
+`run_before` and `run_after`.
+
+The value provided to `run_before` and `run_after` will be wrapped and
+stored in shell script files that later will be executed by the provider.
 
 
 ## CAs and Providers
@@ -316,8 +329,8 @@ Issue a certificate and key and place them in the specified location.
           - nonRepudiation
           - keyEncipherment
         extended_key_usage:
-          - 'id-kp-clientAuth'
-          - 'id-kp-serverAuth'
+          - id-kp-clientAuth
+          - id-kp-serverAuth
   roles:
     - certificate
 ```
