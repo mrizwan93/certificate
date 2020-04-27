@@ -48,13 +48,11 @@ Alternative Names (SAN).
 
 | Parameter            | Description                                                                                       | Type        | Required | Default                 |
 |----------------------|---------------------------------------------------------------------------------------------------|:-----------:|:--------:|-------------------------|
-| name                 | Name of the certificate.                                                                          | str         | yes      | -                       |
+| name                 | Name of the certificate. A full path can be used to choose the directory where files will be stored.| str       | yes      | -                       |
 | ca                   | CA that will issue the certificate. See [CAs and Providers](#cas-and-providers).                  | str         | yes      | -                       |
 | dns                  | Domain (or list of domains) to be included in the certificate. Also can provide the default value for [common\_name](#common_name). | str or list | no | - |
 | email                | Email (or list of emails) to be included in the certificate.                                      | str or list | no       | -                       |
-| ip                   | IP address (or list of IP addresses) to be included in the certificate. Also can provide the default value [common\_name](#common_name). | str or list | no | - |
-| certificate\_file    | Full path of certificate to be issued.                                                            | str         | no       | -                       |
-| key\_file            | Full path to private key file to be issued.                                                       | str         | no       | -                       |
+| ip                   | IP, or list of IPs, to be included in the certificate. IPs can be IPv4, IPv6 or both. Also can provide the default value for [common\_name](#common_name). | str or list | no | - |
 | auto_renew           | Indicates if the certificate should be renewed automatically before it expires.                   | bool        | no       | yes                     |
 | owner                | User name (or user id) for the certificate and key files.                                         | str         | no       | *User running Ansible*  |
 | group                | Group name (or group id) for the certificate and key files.                                       | str         | no       | *Group running Ansible* |
@@ -79,25 +77,6 @@ Alternative Names (SAN).
 If `common_name` is not set the role will attempt to use the first
 value of `dns` or `ip`, respectively, as the default. If `dns` and
 `ip` are also not set, `common_name` will not be included in the certificate.
-
-If you want to ensure that `common_name` doesn't appear in the
-certificate you can set it to `null`. For example:
-
-```yaml
-
----
-- hosts: webserver
-
-  vars:
-    certificate_requests:
-      - name: mycert
-        dns: www.example.com
-        ca: self-sign
-        common_name: null
-
-  roles:
-    - certificate
-```
 
 
 ### key_size
@@ -228,6 +207,8 @@ The directories for each distribution are:
 ### Choose where the certificates will be placed
 
 Issue a certificate and key and place them in the specified location.
+The example bellow will create a certificate file in
+`/another/path/mycert.crt` and a key file in `/another/path/mycert.key`.
 
 ```yaml
 
@@ -235,11 +216,9 @@ Issue a certificate and key and place them in the specified location.
 - hosts: webserver
   vars:
     certificate_requests:
-      - name: mycert
+      - name: /another/path/mycert
         dns: *.example.com
         ca: self-sign
-        certificate_file: /another/path/other-cert-name.crt
-        key_file: /another/path/other-cert-name.key
 
   roles:
     - certificate
@@ -260,8 +239,9 @@ Issue a certificate and key and place them in the specified location.
           - sub2.example.com
           - sub3.example.com
         ip:
-          - 192.168.0.12
-          - 192.168.0.65
+          - 192.0.2.12
+          - 198.51.100.65
+          - 2001:db8::2:1
         email:
           - sysadmin@example.com
           - support@example.com
