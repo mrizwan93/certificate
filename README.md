@@ -56,16 +56,16 @@ Alternative Names (SAN).
 | auto_renew           | Indicates if the certificate should be renewed automatically before it expires.                   | bool        | no       | yes                     |
 | owner                | User name (or user id) for the certificate and key files.                                         | str         | no       | *User running Ansible*  |
 | group                | Group name (or group id) for the certificate and key files.                                       | str         | no       | *Group running Ansible* |
-| key\_size            | Generate keys with a specific keysize in bits.                                                    | int         | no       | 2048 - See [key_size](#key_size) |
-| common\_name         | Common Name requested for the certificate subject.                                                | str         | no       | See [common_name](#common_name)  |
+| key\_size            | Generate keys with a specific keysize in bits.                                                    | int         | no       | 2048 - See [key\_size](#key_size) |
+| common\_name         | Common Name requested for the certificate subject.                                                | str         | no       | See [common\_name](#common_name)  |
 | country              | Country requested for the certificate subject.                                                    | str         | no       | -                       |
 | state                | State requested for the certificate subject.                                                      | str         | no       | -                       |
 | locality             | Locality requested for the certificate subject (usually city).                                    | str         | no       | -                       |
 | organization         | Organization requested for the certificate subject.                                               | str         | no       | -                       |
 | organizational_unit  | Organizational unit requested for the certificate subject.                                        | str         | no       | -                       |
 | contact\_email       | Contact email requested for the certificate subject.                                              | str         | no       | -                       |
-| key\_usage           | Allowed Key Usage for the certificate. For valid values see: [key\_usage](#key_usage).            | list        | no       | -                       |
-| extended\_key\_usage | Extended Key Usage attributes to be present in the certificate request.                           | list        | no       | -                       |
+| key\_usage           | Allowed Key Usage for the certificate. For valid values see: [key\_usage](#key_usage).            | list        | no       | See [key\_usage](#key_usage) |
+| extended\_key\_usage | Extended Key Usage attributes to be present in the certificate request.                           | list        | no       | See [extended\_key\_usage](#extended_key_usage) |
 | run\_before          | Command that should run before saving the certificate. See [run hooks](#run-hooks).               | str         | no       | -                       |
 | run\_after           | Command that should run after saving the certificate. See [run hooks](#run-hooks).                | str         | no       | -                       |
 | principal            | Kerberos principal.                                                                               | str         | no       | -                       |
@@ -103,6 +103,31 @@ Valid values for `key_usage` are:
 * encipherOnly
 * decipherOnly
 
+The defaults for `key_usage` are:
+
+* digitalSignature
+* keyEncipherment
+
+### extended_key_usage
+
+Any valid oid can be used to set one or more `extended_key_usage`.
+In addition to that there is also a list of known aliases that
+will be recognized by the role:
+
+* id-kp-serverAuth
+* id-kp-clientAuth
+* id-kp-codeSigning
+* id-kp-emailProtection
+* id-kp-timeStamping
+* id-kp-OCSPSigning
+* id-kp-ipsecEndSystem
+* id-kp-ipsecTunnel
+* id-kp-ipsecUser
+
+If `extended_key_usage` is not set the role will default to:
+
+* id-kp-serverAuth
+* id-kp-clientAuth
 
 ### run hooks
 
